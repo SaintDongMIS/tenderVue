@@ -2,6 +2,7 @@
 const path = require('path')
 const defaultSettings = require('./src/settings.js')
 const Pack = require("./package.json");
+const TerserPlugin = require('terser-webpack-plugin')
 
 function resolve(dir) {
   return path.join(__dirname, dir)
@@ -46,6 +47,18 @@ module.exports = {
       alias: {
         '@': resolve('src')
       }
+    },
+    optimization: {
+      minimizer: [
+        new TerserPlugin({
+          terserOptions: {
+            compress: {
+              drop_console: false,
+              pure_funcs: []
+            }
+          }
+        })
+      ]
     }
   },
   chainWebpack(config) {
