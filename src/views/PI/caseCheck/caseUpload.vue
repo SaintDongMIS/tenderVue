@@ -660,13 +660,17 @@ export default {
 					else return row.replace(/\r\n|\"/g,'').trim();
 				});
 
-				return headers.reduce((object, header, index) => {
-					if(header == "查報日期") {
-						const dateArr = values[index].split("/");
-						object[header] = moment(`${Number(dateArr[0]) + 1911}/${dateArr[1]}/${dateArr[2]}`).format("YYYY/MM/DD");;
-					} else object[header] = values[index];
-					return object;
-				}, {});
+					return headers.reduce((object, header, index) => {
+						if(header == "查報日期") {
+							const dateArr = values[index].split("/");
+							if (dateArr[0] && dateArr[0].charAt(0) === '2') {
+								object[header] = moment(`${dateArr[0]}/${dateArr[1]}/${dateArr[2]}`).format("YYYY/MM/DD");
+							} else {
+								object[header] = moment(`${Number(dateArr[0]) + 1911}/${dateArr[1]}/${dateArr[2]}`).format("YYYY/MM/DD");
+							}
+						} else object[header] = values[index];
+						return object;
+					}, {});
 			});	
 
 			return result.sort((a, b) => Number(a["來源編號"].replace(/[^0-9]/ig,"")) - Number(b["來源編號"].replace(/[^0-9]/ig,"")))
