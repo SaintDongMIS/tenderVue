@@ -330,8 +330,8 @@ export default {
 						const formatEstimatedDate = []; // 預計完工日期
 
 						for (let i = 0; i < caseNo.length; i++) {
-							formatDateReport.push(moment(dateReport[i]).add(1911, 'years').subtract(8, 'hours').format('YYYY-MM-DD HH:mm:ss'));
-							formatEstimatedDate.push(moment(estimatedDate[i]).add(1911, 'years').subtract(8, 'hours').format('YYYY-MM-DD HH:mm:ss'));
+							formatDateReport.push(moment(dateReport[i]).add(1911, 'years').format('YYYY-MM-DD HH:mm:ss'));
+							formatEstimatedDate.push(moment(estimatedDate[i]).add(1911, 'years').format('YYYY-MM-DD HH:mm:ss'));
 						}
 						// 權責單位 區域轉數字
 						const zipCode = zipAndTeam.map(item => {

@@ -86,7 +86,7 @@ export default {
   },
   methods: {
     formatTime(time) {
-      return moment(time).format("YYYY-MM-DD") + "\n" + moment(time).format("HH:mm:ss");
+      return moment.parseZone(time).format("YYYY-MM-DD") + "\n" + moment.parseZone(time).format("HH:mm:ss");
     },
     getList() {
       getLoginLog()

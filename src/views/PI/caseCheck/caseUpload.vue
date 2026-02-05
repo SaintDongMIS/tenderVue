@@ -297,7 +297,7 @@ export default {
 			searchRange: "",
 			listQuery: {
 				caseType: 1,
-				zipCode: 104
+				zipCode: 103
 			},
 			headers: {
 				UploadCaseNo: {

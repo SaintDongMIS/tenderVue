@@ -335,7 +335,7 @@ export default {
 			else return row[column.property];
 		},
 		formatTime(time) {
-			const m = moment(time).utc();
+			const m = moment(time);
 			return m.isValid ? m.format("YYYY/MM/DD") : '-' ;
 		},
 		handleDownload() {
