@@ -87,7 +87,7 @@
 						<el-input v-model="rowActive.place" type="textarea" :rows="2" />
 						<div slot="label">
 							<div style="height: 24px; line-height: 24px; margin: -3px 2px -5px 0">地址</div>
-							<el-button type="success" size="mini" style="padding: 5px" :loading="isGetAddress" @click="getAddress()">填入</el-button>
+							<el-button type="success" size="mini" style="padding: 5px" :loading="isGetAddress" @click="getAddress()">填入1</el-button>
 						</div>
 					</el-form-item>
 					<el-form-item prop="position" label="位置" style="margin-bottom: 0">
@@ -536,13 +536,34 @@ export default {
 		getAddress() {
 			this.isGetAddress = true;
 
-			getAddress(this.rowActive.position).then(res => {
+			// 優先使用 Google Maps Geocoding API（已修正為繁體中文）
+			this.geocoder.geocode({ 
+				location: this.rowActive.position,
+				language: 'zh-TW'  // 明確指定繁體中文
+			}).then(res => {
+				if (res.results[0]) {
+					this.rowActive.place = res.results[0].formatted_address;
+					this.isGetAddress = false;
+				} else {
+					// Google Maps 查無地址，嘗試內部 API
+					this.fallbackToInternalAPI(this.rowActive.position);
+				}
+			}).catch(err => {
+				console.log(err);
+				// Google Maps API 失敗，嘗試內部 API
+				this.fallbackToInternalAPI(this.rowActive.position);
+			});
+		},
+		// 內部 API 備援方法
+		fallbackToInternalAPI(point) {
+			getAddress(point).then(res => {
 				const resJson = JSON.parse(xml2json(parseXml(res.data), ''));
 				const addressJson = JSON.parse(resJson.string['#text']);
 				// console.log(addressJson);
 
-				if(addressJson.AddressList.length > 0) this.rowActive.place = addressJson.AddressList[0].FULL_ADDR;
-				else {
+				if(addressJson.AddressList.length > 0) {
+					this.rowActive.place = addressJson.AddressList[0].FULL_ADDR;
+				} else {
 					this.$message({
 						message: "查無地址",
 						type: "error",
@@ -551,21 +572,11 @@ export default {
 				this.isGetAddress = false;
 			}).catch(err => {
 				console.log(err);
-
-				// google Map 查詢地址
-				this.geocoder.geocode({ location: this.rowActive.position }).then(res => {
-					if (res.results[0]) this.rowActive.place = res.results[0].formatted_address;
-					else {
-						this.$message({
-							message: "查無地址",
-							type: "error",
-						});
-					}
-					this.isGetAddress = false;
-				}).catch(err => {
-					console.log(err);
-					this.isGetAddress = false;
+				this.$message({
+					message: "地址查詢失敗",
+					type: "error",
 				});
+				this.isGetAddress = false;
 			});
 		},
 		caseFilter() { 

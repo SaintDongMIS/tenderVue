@@ -558,13 +558,34 @@ export default {
 			this.hotSpotIdList.dot.forEach(hotSpot => bounds.extend(hotSpot.coordinates));
 			const point = bounds.getCenter().toJSON();
 
+			// 優先使用 Google Maps Geocoding API（已修正為繁體中文）
+			this.geocoder.geocode({ 
+				location: point,
+				language: 'zh-TW'  // 明確指定繁體中文
+			}).then(res => {
+				if (res.results[0]) {
+					this.caseInfo.place = res.results[0].formatted_address;
+					this.isGetAddress = false;
+				} else {
+					// Google Maps 查無地址，嘗試內部 API
+					this.fallbackToInternalAPI(point);
+				}
+			}).catch(err => {
+				console.log(err);
+				// Google Maps API 失敗，嘗試內部 API
+				this.fallbackToInternalAPI(point);
+			});
+		},
+		// 內部 API 備援方法
+		fallbackToInternalAPI(point) {
 			getAddress(point).then(res => {
 				const resJson = JSON.parse(xml2json(parseXml(res.data), ''));
 				const addressJson = JSON.parse(resJson.string['#text']);
 				// console.log(addressJson);
 
-				if(addressJson.AddressList.length > 0) this.caseInfo.place = addressJson.AddressList[0].FULL_ADDR;
-				else {
+				if(addressJson.AddressList.length > 0) {
+					this.caseInfo.place = addressJson.AddressList[0].FULL_ADDR;
+				} else {
 					this.$message({
 						message: "查無地址",
 						type: "error",
@@ -573,22 +594,11 @@ export default {
 				this.isGetAddress = false;
 			}).catch(err => {
 				console.log(err);
-				// this.isGetAddress = false;
-
-				// google Map 查詢地址
-				this.geocoder.geocode({ location: point }).then(res => {
-					if (res.results[0]) this.caseInfo.place = res.results[0].formatted_address;
-					else {
-						this.$message({
-							message: "查無地址",
-							type: "error",
-						});
-					}
-					this.isGetAddress = false;
-				}).catch(err => {
-					console.log(err);
-					this.isGetAddress = false;
+				this.$message({
+					message: "地址查詢失敗",
+					type: "error",
 				});
+				this.isGetAddress = false;
 			});
 		},
 		screenshot(imgType="imgZoomIn", hfov) {
